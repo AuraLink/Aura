@@ -23,16 +23,41 @@ t.clear()
 intents = discord.Intents.all()
 intents.message_content = True
 
-def prefix(client, message): return DB.fetch_prefix(message.guild.id)
+def prefix(client, message):
+    """
+    Fetch prefix from database,
+    if prefix is not found in database
+    add current guild to database
+    """
+    result = DB.fetch_prefix(message.guild.id)
+    if result == None:
+        DB.add_guild(message.guild.id, "*")
+        return "*"
+    else:
+        return DB.fetch_prefix(message.guild.id)
 
-bot_version = "alpha 1.0.0"
+    
 
+# Bot current version / Modify after every commit
+bot_version = "alpha 1.0.1"
+
+# Define client, prefix, set intents and remove command help (cogs.zew_help)
 client = commands.Bot(command_prefix=prefix, intents=intents)
 client.remove_command('help')
 
+
 class ClientEvents:
+    """
+    All client events are stored in this class
+    on_ready ; on_guild_join ; on_guild_remove ; on_command_error ; on_message
+    """
+
     @client.event
     async def on_ready():
+        """
+        When bot is ready, output the following informations
+        """
+
         t.title("Status: ON")
         change_status.start()
         print(f"{now()} {tc.fg.lightblue}INFO     {tc.fg.purple}{client.user}{tc.reset} is ready to rock n'roll!")
@@ -44,6 +69,10 @@ class ClientEvents:
 
     @client.event
     async def on_guild_join(guild):
+        """
+        When bot joins a guild
+        add guild to database and set default config
+        """
         guild_id = str(guild.id)
         guild_prefix = "*"
         print(guild_id, guild_prefix)
@@ -51,12 +80,17 @@ class ClientEvents:
 
     @client.event
     async def on_guild_remove(guild):
+        """
+        When bot leaves a guild
+        remove guild from database 
+        """
         guild_id = str(guild.id)
         DB.delete_guild(guild_id)
 
 
     @client.event
     async def on_command_error(ctx, error):
+        # Command cooldown
         if isinstance(error, commands.CommandOnCooldown):
             minutes, seconds = divmod(error.retry_after, 60)
             hours, minutes = divmod(minutes, 60)
@@ -69,21 +103,30 @@ class ClientEvents:
             await ctx.send(embed=embed)
 
             return
+
+        # Handle command not found
         if isinstance(error, commands.CommandNotFound):
             return
-        await ctx.send(f"Error: {error}") # Disable after deployment
+
+        await ctx.send(f"An error occured, please report it to our team. [*bot]\nError: {error}") # Remove after deployment
 
     @client.event
     async def on_message(message):
-        channel = client.get_channel(1054943734472658984)
+        dms_channel = client.get_channel(1054943734472658984)
         #if message.content.startswith("report"):
         if message.guild is None and message.author != client.user:
-            await channel.send(message.content)
+            await dms_channel.send(message.content)
+
+            
         await client.process_commands(message)
+
 
 
 @client.group(name="cog", invoke_without_command=True)
 async def cogHandler(ctx):
+    """
+    Cog handler decorator
+    """
     await ctx.send("Available commands: check, load, unload, reload")
 
 @cogHandler.command()

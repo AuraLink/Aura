@@ -56,6 +56,7 @@ class DatabaseInterface:
     def fetch_prefix(self, guild_id):
         self.cur.execute("SELECT prefix FROM guilds WHERE id = (?)", (guild_id,))
         prefix = self.cur.fetchone()
+
         return prefix
 
     def change_prefix(self, guild_id, prefix):
@@ -67,6 +68,13 @@ class DatabaseInterface:
         print(f"{now()} {tc.fg.green}DATABASE     {tc.reset}UPDATE guilds SET prefix = {prefix} WHERE id = {guild_id}")
         self.conn.commit()
         return self.cur
+
+    def databaseStatus(self):
+        try:
+            self.cur
+            return "Online"
+        except Exception as ex:
+            return "Offline" 
 
     def __del__(self):
         """ Destroys instance and connection on completion of called method """
@@ -81,6 +89,7 @@ def CreateTables(db_interface, table):
         db_interface.cur.execute(sql_command) 
 
     f.close()
+
 
 
 load_dotenv()

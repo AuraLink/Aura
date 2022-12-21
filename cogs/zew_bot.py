@@ -14,39 +14,59 @@ class BotStatus(commands.Cog):
 
     @commands.group(name="bot", invoke_without_command=True)
     async def bot(self, ctx):
-        await ctx.send("*Not finished yet.*\n\n**Contact**\n*Discord*: zewutz#1974\n*Email*: zewutz@gmail.com\n*Instagram*: @zewutz")
-
+        embed=discord.Embed(title=" ", color=discord.Color.dark_theme())
+        embed.add_field(name="Contact", value="*Discord*: zewutz#1974\n*Email*: zewutz@gmail.com\n*Instagram*: @zewutz")
+        embed.add_field(name="Aura Website", value="auralink.xyz")
+        await ctx.send(embed=embed)
+    
+    
     @bot.command(name="ping")
     @commands.is_owner()
     async def ping(self, ctx):
-        await ctx.send(f"[PING] {round(self.client.latency * 1000)}ms")
+        embed = discord.Embed(title=f"Ping {round(self.client.latency * 1000)}ms")
+        if round(self.client.latency * 1000) <= 50:
+            embed.color = discord.Color.green()
+        elif round(self.client.latency * 1000) <= 150:
+            embed.color = discord.Color.orange()
+        else:
+            embed.color = discord.Color.red()
+
+        await ctx.send(embed=embed)
 
     @bot.command(name="leave")
     @commands.is_owner()
     async def leave_guild(self, ctx, confirm):
         if confirm.lower() == "confirm":
-            await ctx.send("see ya later mate.")
+            embed=discord.Embed(title=f"Bye {ctx.guild.name}", color=discord.Color.red())
             await ctx.guild.leave()
 
     @bot.command(name="guilds")
     @commands.is_owner()
     async def botguilds(self, ctx):
-        guild_number = f"{self.client.user.mention} is currently connected to {len(list(self.client.guilds))} servers."
-        await ctx.send(guild_number)
+        embed = discord.Embed(title=f"{self.client.user.name} is currently connected to {len(list(self.client.guilds))} servers.")
+        await ctx.send(embed=embed)
 
 from database import DB
+
 class DBManagement(commands.Cog):
     def __init__(self, client):
         self.client = client
 
     @commands.Cog.listener()
     async def on_ready(self):
-        return
+        pass
 
     @commands.is_owner()
     @commands.group(name="db", invoke_without_command=True)
     async def database_(self, ctx):
-        await ctx.send("Database Interface working as it should")
+        status = DB.databaseStatus()
+        embed = discord.Embed(title=f"Database status: {status}")
+        if status == "Online":
+            embed.color = discord.Color.green()
+        else:
+            embed.color = discord.Color.red()
+
+        await ctx.send(embed=embed)
 
 
     @commands.is_owner()
@@ -65,7 +85,7 @@ class DBManagement(commands.Cog):
         if member.bot is False:
             DB.add_user(member_name, member_tag, member_id)
             print(f"{now()} {tc.fg.green}DATABASE     {tc.reset}{member_id} inserted into database.")
-            await ctx.send(f"{member} inserted into database.")
+            await ctx.send(f"{now()} {tc.fg.green}DATABASE     {tc.reset}{member_id} inserted into database.")
         elif member.bot is True:
             await ctx.send(f"{member} is a bot. ")
 
@@ -88,7 +108,6 @@ class DBManagement(commands.Cog):
     @commands.is_owner()
     @database_.command(name="addguild")
     async def addGuild(self, ctx ,guild : discord.Guild):
-        print(guild)
         guild_id = guild.id
         guild_prefix = '*'
 

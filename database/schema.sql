@@ -3,7 +3,10 @@ CREATE TABLE users (username text,
                     userid text);
 
 CREATE TABLE guilds (
-            id text,
-            prefix text
+            id int,
+            prefix text,
+            autorole int,
+            afk_channel int,
+            logs_channel int,
 );
 

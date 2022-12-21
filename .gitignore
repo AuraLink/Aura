@@ -7,6 +7,8 @@
 # C extensions
 *.so
 
+#db
+*.database.db
 
 #.todo
 .todo

@@ -48,10 +48,10 @@ class User(commands.Cog):
     @user_.command(name="message")
     @commands.is_owner()
     async def userMessage(self, ctx, member: discord.Member, *,message):
-        if member in member.guild:
+        if member in ctx.guild.members:
             await member.send(message)
         else:
-            await self.client.get_user().send(message)
+            await DB.fetch_user.get_user().send(message)
 
         await ctx.send(f"message sent to {member.name}#{member.discriminator}:{member.id}")
 
